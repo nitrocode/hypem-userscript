@@ -7,6 +7,7 @@
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js
 // ==/UserScript==
 // Add "Download" link next to songs on the HypeMachine ( http://hypem.com )
+// Latest version at: https://github.com/nitrocode/hypem-userscript
 
 function main(){
     var seen = [];
@@ -42,7 +43,7 @@ function main(){
                                 $('<li>').append(
                                     $('<a>', {
                                         'href': data['url'],
-                                        'style': 'font-family: machine_bitsregular; font-size: 20px; float: right; position: absolute; 
+                                        'style': 'font-family: machine_bitsregular; font-size: 20px; float: right; position: absolute;
 right: -15px; top: 10px;',
                                         'title': trackTitle,
                                         'id': 'download',
