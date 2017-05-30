@@ -1,65 +1,78 @@
 // ==UserScript==
-// @name           Hype Machine direct download links v3
-// @author         @tonyskn @obmas @blissofbeing
-// @description	   Add download links next to tracks on The Hype Machine.
+// @name           Hype Machine direct download links
+// @author         @tonyskn @obmas @blissofbeing @nitrocode
+// @version        0.2.7
+// @description    Add download links next to tracks on The Hype Machine.
 // @include        http://hypem.com/*
+// @require        https://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js
 // ==/UserScript==
-//
-// Orginal Script by @tonyskn
-// Modified by @obmas
-// I got rid of the hot keys and the embeded icon. This now adds (Download) next to the track and attributes to work with the DownThemAll plugin.
-// Modified by @blissofbeing
-// Replaced Protoype code with pure JS or jQuery to fix Aug 25 2011 update on hypem.com. Removed un-needed code.
+// Add "Download" link next to songs on the HypeMachine ( http://hypem.com )
+// Latest version at: https://github.com/nitrocode/hypem-userscript
 
-//GM_log("fired");
-var TrackList;
-var TrackElements;
-var SelectedTrack;
+function main(){
+    var seen = [];
 
-function addLinks() {
-	// GM_log('addLinks');
-	TrackList = unsafeWindow.trackList[document.location.href];
-	if (TrackList == undefined || TrackList.length < 1) {
-		//GM_log('delay');
-		unsafeWindow.setTimeout(addLinks, 1000);
-	} else {
-		// Check if this particular page has been processed through a previous call
-		if (unsafeWindow.jQuery('.gmlink').length < 1) {
-			// GM_log("here we go! "+document.location.href);
-			// Update some global variables than add links
-			TrackElements = unsafeWindow.jQuery('div.section-track');
-			SelectedTrack = 0;
-			var index = 0;
-			var tracks = unsafeWindow.jQuery('div.section-track .track_name');
-			tracks.each(function(index, element) {
-				var trackId = TrackList[index].id;
-				var trackKey = TrackList[index].key;
-				var trackArtist = TrackList[index].artist;
-				var trackSong = TrackList[index].song;
-				// GM_log(index + " - " + trackId + " - " + trackKey);
-				if (trackKey) {
-						if(element.innerHTML.indexOf("Download")==-1){							
-							//window.Element.insert(element, "<a title='"+trackArtist+" - "+trackSong+"' href='/serve/play/"+trackId+"/"+trackKey+"'>&nbsp;<sub><b style='color:red'>(download)</b></sub><sub style='font-size:0px;'>"+trackArtist+" - "+trackSong+"</sub></a>");
-							//above line stopped working Aug 2011, changed to pure JS by @blissofbeing																						
-							var ahref = document.createElement('a');
-							ahref.setAttribute('href', "/serve/play/"+trackId+"/"+trackKey);
-							ahref.setAttribute('style','color:red;position: absolute;right: 10px;top: 5px;z-index: 9969;');
-							ahref.setAttribute('title',trackArtist+" - "+trackSong);
-							ahref.setAttribute('class','gmlink');
-							ahref.appendChild(document.createTextNode("Download"));							
-							element.parentNode.insertBefore( ahref, element.nextSibling );
-						}
-				}		
-				index++;
-			});
-		}
-	}
+    /**
+     * Adds links to each Hype Machine song
+     * No parameters
+     * Nothing to return
+     */
+    function addLinks() {
+        if (typeof displayList !== "undefined") {
+            var TrackList = displayList.tracks;
+            // if the TrackList is undefined, re-run the function in 1 sec
+            if (TrackList === undefined || TrackList.length < 1) {
+                setTimeout(addLinks, 1000);
+            } else {
+                // should get an array of 20 songs
+                var tracks = $('div.section-player');
+                tracks.each(function(index, element) {
+                    // Check if this particular element has already been processed through a previous call
+                    if (!$(element).find('a#download').length) {
+                        var trackKey = TrackList[index].key;
+                        if (seen.indexOf(trackKey) === -1) {
+                            seen.push(trackKey);
+                            var trackId = TrackList[index].id;
+                            var trackArtist = TrackList[index].artist;
+                            var trackSong = TrackList[index].song;
+                            var trackTitle = trackArtist + " - " + trackSong;
+                            // this url gets the actual music file location
+                            var urlFileLoc = "/serve/source/" + trackId + "/" + trackKey;
+                            $.getJSON(urlFileLoc, function(data) {
+                                // add a new <li><a> tag to ui.tools
+                                $('<li>').append(
+                                    $('<a>', {
+                                        'href': data['url'],
+                                        'style': 'font-family: machine_bitsregular; font-size: 20px; float: right; position: absolute; right: -15px; top: 10px;',
+                                        'title': trackTitle,
+                                        'id': 'download',
+                                        'target': "_blank",
+                                        // this doesn't work due to cross origin...
+                                        'download': trackTitle + '.mp3',
+                                        // This shows the download icon using hype's machine_bitsregular font
+                                        'text': 'H'
+                                    })
+                                ).appendTo($(element).find('ul.tools'));
+                                console.log('Added download link to: ' + trackTitle);
+                            });
+                        }
+                        index++;
+                    }
+                });
+                $(".section.same .tools").css('top','29px');
+            }
+        }
+    }
+
+    // Display links after an Ajax update is complete
+    if (typeof jQuery === "function") {
+        $(document).ajaxComplete(function() {
+            addLinks();
+        });
+    }
 }
 
-addLinks();
-
-// Display links after an Ajax update is complete
-unsafeWindow.jQuery(document).ajaxComplete(function() {
-	//unsafeWindow.console.log("ajax url: "+document.location.href);
-	addLinks();
-});
+// inject script
+var script = document.createElement('script');
+script.appendChild(document.createTextNode('(' + main + ')();'));
+(document.body || document.head || document.documentElement).appendChild(script);
