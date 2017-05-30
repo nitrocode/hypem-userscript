@@ -43,8 +43,7 @@ function main(){
                                 $('<li>').append(
                                     $('<a>', {
                                         'href': data['url'],
-                                        'style': 'font-family: machine_bitsregular; font-size: 20px; float: right; position: absolute;
-right: -15px; top: 10px;',
+                                        'style': 'font-family: machine_bitsregular; font-size: 20px; float: right; position: absolute; right: -15px; top: 10px;',
                                         'title': trackTitle,
                                         'id': 'download',
                                         'target': "_blank",
