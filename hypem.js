@@ -3,7 +3,7 @@
 // @author         @tonyskn @obmas @blissofbeing @nitrocode
 // @version        0.2.7
 // @description    Add download links next to tracks on The Hype Machine.
-// @include        http://hypem.com/*
+// @include        https://hypem.com*
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js
 // ==/UserScript==
 // Add "Download" link next to songs on the HypeMachine ( http://hypem.com )
